@@ -30,6 +30,8 @@ gem 'jbuilder', '~> 2.5'
 #gem 'magentwo'
 gem 'magento2-api', github: 'antiloopgmbh/magento2-api'
 gem 'sidekiq'
+gem 'sidekiq-cron'
+gem 'sidekiq-failures'
 gem 'fcm'
 gem 'grape'
 # Use ActiveStorage variant
