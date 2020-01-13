@@ -44,23 +44,26 @@ class CustomerWorker
     if state === 'new'
       notification = "Order ##{order_id} has been placed successfully!"
       end
-    if state === 'processing'
-      notification = "Order ##{order_id} has been moved to processing!"
+    if state === 'pending'
+      notification = "Order ##{order_id} has been processed!"
     end
 
     if state === 'canceled'
-      notification = "Order ##{order_id} has been canceled!"
+      notification = "Order ##{order_id} has been cancelled!"
     end
 
-    if state === 'shipped'
-      notification = "Order ##{order_id} has been shipped successfully!"
+    if state === 'processing'
+      notification = "Order ##{order_id} has been processed!"
     end
     if state === 'complete'
-      notification = "Order ##{order_id} has been delivered successfully!"
+      notification = "Order ##{order_id} has been shipped!"
+    end
+    if state === 'closed'
+      notification = "Order ##{order_id} has been delivered!"
     end
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
-      Notification.create(user_id: customer_id, order_id: order_id, notification: notification, title: title,  status: true, state: state).save
+      Notification.create(user_id: customer_id, order_id: order_id, notification: notification, title: title,  status: false, state: state).save
       #send_notification title, notification, device_id, device_type
     end
 
@@ -110,7 +113,12 @@ class CustomerWorker
         #end
 
         if device_id.present? && device_type.present?
-          Customer.create(first_name: first_name,last_name: last_name, email: email, phone: phone , customer_id: customer_id, device_id: device_id, device_type: device_type).save
+          customer_e = Customer.where(email: email)
+          if customer_e.present?
+            Customer.update(device_id: device_id, device_type: device_type)
+          else
+            Customer.create(first_name: first_name,last_name: last_name, email: email, phone: phone , customer_id: customer_id, device_id: device_id, device_type: device_type).save
+          end
           order_id =  order[:increment_id]
           state = order[:state]
           phone = ''
@@ -121,11 +129,36 @@ class CustomerWorker
     end
   end
   def update_customer email, order
-    state = order[:state]
-    order.update(state: state)
-    customer = Customer.where(eamil: email)
-    if customer
-      setup_notification(state, order_id, customer.customer_id, customer.device_id, customer.device_type )
+    customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
+    #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
+    customer = customer[:items].first
+    if customer.present?
+      if customer[:custom_attributes].present?
+        attributes  = customer[:custom_attributes]
+        device_id = ''
+        device_type = ''
+        #if attributes.present?
+        device_index = attributes.find_index{ |item| item[:attribute_code] === "device_id"}
+        if attributes[device_index]
+          device_id = attributes[device_index][:value]
+        end
+        device_index = attributes.find_index{ |item| item[:attribute_code] === "device_type"}
+        if attributes[device_index]
+          device_type = attributes[device_index][:value]
+        end
+        #end
+
+        if device_id.present? && device_type.present?
+          customer_e = Customer.where(email: email)
+          if customer_e.present?
+            Customer.update(device_id: device_id, device_type: device_type)
+            state = order[:state]
+            order.update(state: state)
+            setup_notification(state, order.order_id, customer.customer_id, customer.device_id, customer.device_type )
+          end
+
+        end
+      end
     end
   end
 end
