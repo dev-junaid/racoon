@@ -39,27 +39,27 @@ class CustomerWorker
   end
   def setup_notification state, order_id, customer_id, device_id, device_type
     title = 'Order Notification'
-    notification = ''
+    n_text = ''
 
     if state === 'new'
-      notification = "Order ##{order_id} has been placed successfully!"
+      n_text = "Order ##{order_id} has been placed successfully!"
       end
     if state === 'pending'
-      notification = "Order ##{order_id} has been processed!"
+      n_text = "Order ##{order_id} has been processed!"
     end
 
     if state === 'canceled'
-      notification = "Order ##{order_id} has been cancelled!"
+      n_text = "Order ##{order_id} has been cancelled!"
     end
 
     if state === 'processing'
-      notification = "Order ##{order_id} has been processed!"
+      n_text = "Order ##{order_id} has been processed!"
     end
     if state === 'complete'
-      notification = "Order ##{order_id} has been shipped!"
+      n_text = "Order ##{order_id} has been shipped!"
     end
     if state === 'closed'
-      notification = "Order ##{order_id} has been delivered!"
+      n_text = "Order ##{order_id} has been delivered!"
     end
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
@@ -154,7 +154,7 @@ class CustomerWorker
             Customer.update(device_id: device_id, device_type: device_type)
             state = order[:state]
             order.update(state: state)
-            setup_notification(state, order.order_id, customer.customer_id, customer.device_id, customer.device_type )
+            setup_notification(state, order.order_id, customer_e.customer_id, customer_e.device_id, customer_e.device_type )
           end
 
         end
