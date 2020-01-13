@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_10_094351) do
+ActiveRecord::Schema.define(version: 2020_01_13_104358) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,6 +34,17 @@ ActiveRecord::Schema.define(version: 2020_01_10_094351) do
     t.text "notification"
     t.boolean "status"
     t.bigint "order_id"
+    t.text "title"
+    t.string "state"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.string "order_id"
+    t.string "state"
+    t.string "customer_emails"
+    t.string "customer_phone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end
