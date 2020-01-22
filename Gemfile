@@ -32,6 +32,8 @@ gem 'magento2-api', github: 'antiloopgmbh/magento2-api'
 gem 'sidekiq'
 gem 'sidekiq-cron'
 gem 'sidekiq-failures'
+gem 'sidekiq-scheduler'
+#gem "si?natra", require: nil
 gem 'fcm'
 gem 'grape'
 # Use ActiveStorage variant

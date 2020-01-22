@@ -1,0 +1,21 @@
+# Set inventory images at every 6 hours
+customer_worker:
+  cron: "*/55 * * * *"
+  class: "CustomerWorker"
+  queue: default
+
+  # config/sidekiq_scheduler.yml
+
+default: &default
+  customer_worker:
+    class: CustomerWorker
+    cron: "*/55 * * * *"
+
+development:
+  <<: *default
+
+staging:
+  <<: *default
+
+production:
+  <<: *default
