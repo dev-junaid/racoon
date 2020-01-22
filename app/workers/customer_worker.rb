@@ -64,7 +64,7 @@ class CustomerWorker
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
       Notification.create(user_id: customer_id, order_id: order_id, notification: n_text, title: title,  status: false, state: state).save
-      #send_notification title, notification, device_id, device_type
+      send_notification title, notification, device_id, device_type
     end
 
   end
