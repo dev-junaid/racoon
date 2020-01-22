@@ -3,7 +3,3 @@ customer_worker:
   cron: "*/10 * * * *"
   class: "CustomerWorker"
   queue: default
-
-my_first_job:
-  cron: "*/1 * * * *" #it will retrieve data every 1 minute
-  class: "HardWorker"
