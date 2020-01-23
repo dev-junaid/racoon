@@ -12,29 +12,32 @@ class CustomerWorker
     all_orders = orders[:items]
     all_orders.each do |order|
       order_id =  order[:increment_id]
-      if order_id > "000000047" && order_id > "6000000075" && order_id != "7000000001"
-        email = order[:customer_email]
-        puts "-------------------------"
-        puts order.inspect
-        puts "=============================="
-        #order_e = Order.where(order_id: order_id)
-        order_e = Order.where(order_id: "6000000076")
-        if order_e.present? && order[:state].present?
-          unless order_e.state === order[:state]
-            update_customer(email, order)
-          end
-        else
-          setup_customer(email, order)
-        end
-
+      store = order[:store_id]
+      if store === 1 && order_id > "000000047" && order_id != "7000000001"
+        n_perform order,order_id
+      elsif store === 6 && order_id > "6000000075" && order_id != "7000000001"
+        n_perform order,order_id
       end
 
+    end
+  end
+  def n_perform order, order_id
+    email = order[:customer_email]
+    puts "-------------------------"
+    puts order.inspect
+    puts "=============================="
+    order_e = Order.where(order_id: order_id)
+    if order_e.present? && order[:state].present?
+      unless order_e.first.state === order[:state]
+        update_customer(email, order, order_e)
+      end
+    else
+      setup_customer(email, order, order_e)
     end
   end
   def setup_notification state, order_id, customer_id, device_id, device_type
     title = 'Order Notification'
     n_text = ''
-
     if state === 'new'
       n_text = "Order ##{order_id} has been placed successfully!"
     end
@@ -58,7 +61,7 @@ class CustomerWorker
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
       Notification.create(user_id: customer_id, order_id: order_id, notification: n_text, title: title,  status: false, state: state).save
-      send_notification title, notification, device_id, device_type
+      send_notification title, n_text, device_id, device_type
     end
 
   end
@@ -77,7 +80,7 @@ class CustomerWorker
       puts response
     end
   end
-  def setup_customer email, order
+  def setup_customer email, order, order_e
     #def setup_customer
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
@@ -124,7 +127,7 @@ class CustomerWorker
       end
     end
   end
-  def update_customer email, order
+  def update_customer email, order,order_e
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     customer = customer[:items].first
@@ -133,6 +136,7 @@ class CustomerWorker
         attributes  = customer[:custom_attributes]
         device_id = ''
         device_type = ''
+        #Customer.update(customer_id: customer_id)
         #if attributes.present?
         device_index = attributes.find_index{ |item| item[:attribute_code] === "device_id"}
         if attributes[device_index]
@@ -145,13 +149,15 @@ class CustomerWorker
         #end
 
         if device_id.present? && device_type.present?
+          customer_id = customer[:addresses].first[:customer_id]
           customer_e = Customer.where(email: email)
           if customer_e.present?
-            Customer.update(device_id: device_id, device_type: device_type)
+            Customer.update(device_id: device_id, device_type: device_type, customer_id: customer_id)
             if order[:state].present?
               state = order[:state]
-              order.update(state: state)
-              setup_notification(state, order.order_id, customer_e.customer_id, customer_e.device_id, customer_e.device_type )
+              order_id =  order[:increment_id]
+              order_e.update(state: state)
+              setup_notification(state, order_id, customer_id, customer_e.first.device_id, customer_e.first.device_type )
             end
           end
 
