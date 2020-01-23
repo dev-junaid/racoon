@@ -12,10 +12,13 @@ class CustomerWorker
     all_orders = orders[:items]
     all_orders.each do |order|
       order_id =  order[:increment_id]
-      if order_id > "000000047" && order_id > "6000000075"
+      if order_id > "000000047" && order_id > "6000000075" && order_id != "7000000001"
         email = order[:customer_email]
-        debugger
-        order_e = Order.where(order_id: order_id)
+        puts "-------------------------"
+        puts order.inspect
+        puts "=============================="
+        #order_e = Order.where(order_id: order_id)
+        order_e = Order.where(order_id: "6000000076")
         if order_e.present? && order[:state].present?
           unless order_e.state === order[:state]
             update_customer(email, order)
