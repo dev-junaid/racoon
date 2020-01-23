@@ -14,7 +14,7 @@ class CustomerWorker
       order_id =  order[:increment_id]
       email = order[:customer_email]
       order_e = Order.where(order_id: order_id)
-      if order_e.present?
+      if order_e.present? && order[:state].present?
         unless order_e.state === order[:state]
           update_customer(email, order)
         end
