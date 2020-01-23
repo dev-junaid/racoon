@@ -12,7 +12,7 @@ class CustomerWorker
     all_orders = orders[:items]
     all_orders.each do |order|
       order_id =  order[:increment_id]
-      if order_id > "000000047"
+      if order_id > "000000047" && order_id > "6000000075"
         email = order[:customer_email]
         order_e = Order.where(order_id: order_id)
         if order_e.present? && order[:state].present?
