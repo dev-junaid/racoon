@@ -79,6 +79,15 @@ class CustomerWorker
       response = fcm.send(registration_ids, options)
       puts response
     end
+    if device_type === 'ios'
+      options = { "notification": {
+          "title": title,
+          "body": body
+      }
+      }
+      response = fcm.send(registration_ids, options)
+      puts response
+    end
   end
   def setup_customer email, order, order_e
     #def setup_customer
