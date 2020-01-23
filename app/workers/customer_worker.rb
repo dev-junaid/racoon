@@ -43,7 +43,7 @@ class CustomerWorker
 
     if state === 'new'
       n_text = "Order ##{order_id} has been placed successfully!"
-      end
+    end
     if state === 'pending'
       n_text = "Order ##{order_id} has been processed!"
     end
@@ -84,7 +84,7 @@ class CustomerWorker
     end
   end
   def setup_customer email, order
-  #def setup_customer
+    #def setup_customer
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     customer = customer[:items].first
@@ -102,14 +102,14 @@ class CustomerWorker
         device_id = ''
         device_type = ''
         #if attributes.present?
-          device_index = attributes.find_index{ |item| item[:attribute_code] === "device_id"}
-          if attributes[device_index]
-            device_id = attributes[device_index][:value]
-          end
-          device_index = attributes.find_index{ |item| item[:attribute_code] === "device_type"}
-          if attributes[device_index]
-            device_type = attributes[device_index][:value]
-          end
+        device_index = attributes.find_index{ |item| item[:attribute_code] === "device_id"}
+        if attributes[device_index]
+          device_id = attributes[device_index][:value]
+        end
+        device_index = attributes.find_index{ |item| item[:attribute_code] === "device_type"}
+        if attributes[device_index]
+          device_type = attributes[device_index][:value]
+        end
         #end
 
         if device_id.present? && device_type.present?
@@ -120,10 +120,12 @@ class CustomerWorker
             Customer.create(first_name: first_name,last_name: last_name, email: email, phone: phone , customer_id: customer_id, device_id: device_id, device_type: device_type).save
           end
           order_id =  order[:increment_id]
-          state = order[:state]
-          phone = ''
-          Order.create(order_id: order_id, state: state, customer_emails: email, customer_phone: phone).save
-          setup_notification(state, order_id, customer_id, device_id, device_type )
+          if order[:state].present?
+            state = order[:state]
+            phone = ''
+            Order.create(order_id: order_id, state: state, customer_emails: email, customer_phone: phone).save
+            setup_notification(state, order_id, customer_id, device_id, device_type )
+          end
         end
       end
     end
@@ -152,9 +154,11 @@ class CustomerWorker
           customer_e = Customer.where(email: email)
           if customer_e.present?
             Customer.update(device_id: device_id, device_type: device_type)
-            state = order[:state]
-            order.update(state: state)
-            setup_notification(state, order.order_id, customer_e.customer_id, customer_e.device_id, customer_e.device_type )
+            if order[:state].present?
+              state = order[:state]
+              order.update(state: state)
+              setup_notification(state, order.order_id, customer_e.customer_id, customer_e.device_id, customer_e.device_type )
+            end
           end
 
         end
