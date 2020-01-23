@@ -14,6 +14,7 @@ class CustomerWorker
       order_id =  order[:increment_id]
       if order_id > "000000047" && order_id > "6000000075"
         email = order[:customer_email]
+        debugger
         order_e = Order.where(order_id: order_id)
         if order_e.present? && order[:state].present?
           unless order_e.state === order[:state]
