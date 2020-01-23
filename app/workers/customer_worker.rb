@@ -12,30 +12,20 @@ class CustomerWorker
     all_orders = orders[:items]
     all_orders.each do |order|
       order_id =  order[:increment_id]
-      email = order[:customer_email]
-      order_e = Order.where(order_id: order_id)
-      if order_e.present? && order[:state].present?
-        unless order_e.state === order[:state]
-          update_customer(email, order)
+      if order_id > "000000047"
+        email = order[:customer_email]
+        order_e = Order.where(order_id: order_id)
+        if order_e.present? && order[:state].present?
+          unless order_e.state === order[:state]
+            update_customer(email, order)
+          end
+        else
+          setup_customer(email, order)
         end
 
-        #setup_notification(state, order.id, customer_id )
-      else
-        setup_customer(email, order)
       end
 
     end
-
-
-
-    #Magentwo.connect "https://mall2door.net", "fadal", "Fadal19*"
-    #customers = Magentwo::Customer.all
-    #if customers.present?
-    #  customers.each do |customer|
-    #lastname = customer.lastname. present? ? customer.lastname : ''
-    #Customer.new(first_name: customer.firstname, last_name: customer.lastname, email: customer.email, customer_id: customer.id).save
-    #end
-    #end
   end
   def setup_notification state, order_id, customer_id, device_id, device_type
     title = 'Order Notification'
