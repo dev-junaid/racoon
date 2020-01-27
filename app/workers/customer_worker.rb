@@ -73,7 +73,7 @@ class CustomerWorker
     end
 
   end
-  def send_notification title, a_title, body, ar_body, device_id, device_type
+  def send_notification title, ar_title, body, ar_body, device_id, device_type
     #device_id = device_id
     #device_type = device_type
     fcm = FCM.new("AAAART0-JpY:APA91bGXH8mhK2yStnuFxWZNvNrUrIrXWrojXim976wuHZWmnB6z04UQ_VY8LiGKaDIRHy9tX_LEyJcfjzyfouI6TiJM8CAqHybyoFqaeX1NHPUaGbm1SRGvNb6K8hdlMuK_T2WuikF0")
@@ -81,34 +81,24 @@ class CustomerWorker
     if device_type === 'android'
       options = { "data": {
           "title": title,
-          "body": body
-      }
-      }
-      ar_options = { "data": {
-          "title": a_title,
-          "body": ar_body
+          "body": body,
+          "ar_title": ar_title,
+          "ar_body": ar_body
       }
       }
       response = fcm.send(registration_ids, options)
       puts response
-      ar_response = fcm.send(registration_ids, ar_options)
-      puts ar_response
     end
     if device_type === 'ios'
       options = { "notification": {
           "title": title,
-          "body": body
-      }
-      }
-      ar_options = { "notification": {
-          "title": a_title,
-          "body": ar_body
+          "body": body,
+          "ar_title": ar_title,
+          "ar_body": ar_body
       }
       }
       response = fcm.send(registration_ids, options)
       puts response
-      ar_response = fcm.send(registration_ids, ar_options)
-      puts ar_response
     end
   end
   def setup_customer email, order, order_e
