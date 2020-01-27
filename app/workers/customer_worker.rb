@@ -37,35 +37,43 @@ class CustomerWorker
   end
   def setup_notification state, order_id, customer_id, device_id, device_type
     title = 'Order Notification'
+    a_title = 'طلب الإخطار'
     n_text = ''
+    a_text = ''
     if state === 'new'
       n_text = "Order ##{order_id} has been placed successfully!"
+      a_text = "تم وضع الطلب ##{order_id} بنجاح!"
     end
     if state === 'pending'
       n_text = "Order ##{order_id} has been processed!"
+      a_text = "تمت معالجة الطلب ##{order_id}!"
     end
 
     if state === 'canceled'
       n_text = "Order ##{order_id} has been cancelled!"
+      a_text = "تم إلغاء الطلب ##{order_id}!"
     end
 
     if state === 'processing'
       n_text = "Order ##{order_id} has been processed!"
+      a_text = "تمت معالجة الطلب ##{order_id}!"
     end
     if state === 'complete'
       n_text = "Order ##{order_id} has been shipped!"
+      a_text = "تم شحن الطلب ##{order_id}!"
     end
     if state === 'closed'
       n_text = "Order ##{order_id} has been delivered!"
+      a_text = "تم تسليم الطلب ##{order_id}!"
     end
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
-      Notification.create(user_id: customer_id, order_id: order_id, notification: n_text, title: title,  status: false, state: state).save
-      send_notification title, n_text, device_id, device_type
+      Notification.create(user_id: customer_id, order_id: order_id, notification: n_text, ar_notification: a_text, title: title,  status: false, state: state).save
+      send_notification title,a_title, n_text, a_text, device_id, device_type
     end
 
   end
-  def send_notification title, body, device_id, device_type
+  def send_notification title, a_title, body, ar_body, device_id, device_type
     #device_id = device_id
     #device_type = device_type
     fcm = FCM.new("AAAART0-JpY:APA91bGXH8mhK2yStnuFxWZNvNrUrIrXWrojXim976wuHZWmnB6z04UQ_VY8LiGKaDIRHy9tX_LEyJcfjzyfouI6TiJM8CAqHybyoFqaeX1NHPUaGbm1SRGvNb6K8hdlMuK_T2WuikF0")
@@ -76,8 +84,15 @@ class CustomerWorker
           "body": body
       }
       }
+      ar_options = { "data": {
+          "title": a_title,
+          "body": ar_body
+      }
+      }
       response = fcm.send(registration_ids, options)
       puts response
+      ar_response = fcm.send(registration_ids, ar_options)
+      puts ar_response
     end
     if device_type === 'ios'
       options = { "notification": {
@@ -85,8 +100,15 @@ class CustomerWorker
           "body": body
       }
       }
+      ar_options = { "notification": {
+          "title": a_title,
+          "body": ar_body
+      }
+      }
       response = fcm.send(registration_ids, options)
       puts response
+      ar_response = fcm.send(registration_ids, ar_options)
+      puts ar_response
     end
   end
   def setup_customer email, order, order_e
