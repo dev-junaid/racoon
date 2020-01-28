@@ -1,4 +1,4 @@
 customer_worker:
-  cron: "*/10 * * * *"
+  cron: "*/3 * * * *"
   class: "CustomerWorker"
   queue: default
