@@ -106,13 +106,12 @@ class CustomerWorker
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     customer = customer[:items].first
-
     if customer.present?
       first_name = customer[:firstname]
       last_name = customer[:lastname]
       #email = customer[:email]
       phone = customer[:addresses].first[:telephone]
-      customer_id = customer[:customer_id]
+      customer_id = customer[:addresses].first[:customer_id]
 
       #puts customer[:items].present?
       if customer[:custom_attributes].present?
