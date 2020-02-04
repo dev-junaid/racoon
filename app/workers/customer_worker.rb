@@ -14,14 +14,14 @@ class CustomerWorker
       order_id =  order[:increment_id]
       store = order[:store_id]
       if store === 1 && order_id > "000000047" && order_id != "7000000001"
-        n_perform order,order_id
+        n_perform order,order_id, store
       elsif store === 6 && order_id > "6000000075" && order_id != "7000000001"
-        n_perform order,order_id
+        n_perform order,order_id, store
       end
 
     end
   end
-  def n_perform order, order_id
+  def n_perform order, order_id, store
     email = order[:customer_email]
     puts "-------------------------"
     puts order.inspect
@@ -29,13 +29,13 @@ class CustomerWorker
     order_e = Order.where(order_id: order_id)
     if order_e.present? && order[:state].present?
       unless order_e.first.state === order[:state]
-        update_customer(email, order, order_e)
+        update_customer(email, order, order_e, store)
       end
     else
-      setup_customer(email, order, order_e)
+      setup_customer(email, order, order_e, store)
     end
   end
-  def setup_notification state, order_id, customer_id, device_id, device_type
+  def setup_notification state, order_id, customer_id, device_id, device_type, store
     title = 'Order Notification'
     a_title = 'طلب الإخطار'
     n_text = ''
@@ -69,11 +69,11 @@ class CustomerWorker
     notification = Notification.where(user_id: customer_id, order_id: order_id, state: state)
     unless notification.present?
       Notification.create(user_id: customer_id, order_id: order_id, notification: n_text, ar_notification: a_text, title: title,  status: false, state: state).save
-      send_notification title,a_title, n_text, a_text, device_id, device_type
+      send_notification title,a_title, n_text, a_text, device_id, device_type, store
     end
 
   end
-  def send_notification title, ar_title, body, ar_body, device_id, device_type
+  def send_notification title, ar_title, body, ar_body, device_id, device_type, store
     #device_id = device_id
     #device_type = device_type
     fcm = FCM.new("AAAART0-JpY:APA91bGXH8mhK2yStnuFxWZNvNrUrIrXWrojXim976wuHZWmnB6z04UQ_VY8LiGKaDIRHy9tX_LEyJcfjzyfouI6TiJM8CAqHybyoFqaeX1NHPUaGbm1SRGvNb6K8hdlMuK_T2WuikF0")
@@ -90,18 +90,27 @@ class CustomerWorker
       puts response
     end
     if device_type === 'ios'
-      options = { "notification": {
-          "title": title,
-          "body": body,
-          "ar_title": ar_title,
-          "ar_body": ar_body
-      }
-      }
+      if store === 1
+        options = { "notification": {
+            "title": title,
+            "body": body,
+        }
+        }
+      end
+      if store === 6
+        options = { "notification": {
+            "title": ar_title,
+            "body": ar_body
+
+        }
+        }
+      end
+
       response = fcm.send(registration_ids, options)
       puts response
     end
   end
-  def setup_customer email, order, order_e
+  def setup_customer email, order, order_e, store
     #def setup_customer
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
@@ -141,13 +150,13 @@ class CustomerWorker
             state = order[:state]
             phone = ''
             Order.create(order_id: order_id, state: state, customer_emails: email, customer_phone: phone).save
-            setup_notification(state, order_id, customer_id, device_id, device_type )
+            setup_notification(state, order_id, customer_id, device_id, device_type, store )
           end
         end
       end
     end
   end
-  def update_customer email, order,order_e
+  def update_customer email, order,order_e, store
     customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': email, 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     #customer = Magento2::Api.get("/rest/V1/customers/search", {'searchCriteria[filter_groups][0][filters][0][field]': 'email', 'searchCriteria[filter_groups][0][filters][0][value]': 'maiwandsultan@gmail.com', 'searchCriteria[filter_groups][0][filters][0][condition_type]': 'like'})
     customer = customer[:items].first
@@ -177,7 +186,7 @@ class CustomerWorker
               state = order[:state]
               order_id =  order[:increment_id]
               order_e.update(state: state)
-              setup_notification(state, order_id, customer_id, customer_e.first.device_id, customer_e.first.device_type )
+              setup_notification(state, order_id, customer_id, customer_e.first.device_id, customer_e.first.device_type, store )
             end
           end
 

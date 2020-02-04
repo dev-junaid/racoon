@@ -36,6 +36,10 @@ gem 'sidekiq-failures'
 gem 'sinatra', require: false
 gem 'fcm'
 gem 'grape'
+gem 'savon'
+gem 'oauth'
+gem 'magento_rest_api'
+gem 'magentwo'
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
 
