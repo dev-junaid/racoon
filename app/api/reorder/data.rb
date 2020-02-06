@@ -119,7 +119,6 @@ module Reorder
                   }
               }
               response =  service.connect('PUT', "https://mall2door.net/rest/V1/guest-carts/#{user_id}/order", order_params)
-              debugger
               puts order_details = JSON.parse(response.body)
 
               if response.kind_of? Net::HTTPSuccess
