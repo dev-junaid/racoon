@@ -71,7 +71,9 @@ module Reorder
                 response =  service.connect('POST', "https://mall2door.net/rest/V1/guest-carts/#{cart_id}/items", item)
                 puts cart = JSON.parse(response.body)
               end
+
               # STEP 4
+              # STEP 5
               shipping_info = {
                   "addressInformation" => {
                       "shipping_address" => {
@@ -104,12 +106,11 @@ module Reorder
                           "email" => email,
                           "telephone" => telephone
                       },
-                      "shipping_carrier_code" => shipping_carrier_code,
-                      "shipping_method_code" => shipping_method_code
+                      "shipping_carrier_code" => "flatrate",
+                      "shipping_method_code" => "flatrate"
                   }
               }
               response =  service.connect('POST', "https://mall2door.net/rest/V1/guest-carts/#{user_id}/shipping-information", shipping_info)
-              # debugger
               puts shipping = JSON.parse(response.body)
 
               # STEP 6
