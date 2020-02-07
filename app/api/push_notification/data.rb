@@ -5,7 +5,10 @@ module PushNotification
       desc "List all Notifications"
 
       get do
-        Notification.where(user_id: params[:customer_id])
+        customer = Customer.where(email: params[:customer_id])
+        if customer.present?
+          Notification.where(user_id: customer.first.customer_id)
+        end
       end
 
     end
