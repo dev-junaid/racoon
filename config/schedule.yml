@@ -2,3 +2,8 @@ customer_worker:
   cron: "*/3 * * * *"
   class: "CustomerWorker"
   queue: default
+
+order_worker:
+    cron: "* * * * *"
+    class: "OrderWorker"
+    queue: default
